@@ -1,4 +1,4 @@
 
-# Il mio Curriculum Vitae
+# My Curriculum Vitae
 
-Si puo' visualizzare anche su overleaf.com
+Written with Tex with a template from: Christian Maria Giannetti
