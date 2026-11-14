@@ -1,0 +1,56 @@
+name: Compile LaTeX CV & Release
+
+on:
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: write # Necessario per creare la Release e caricare i file
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Tectonic CLI
+        run: |
+          # Scarica e installa l'ultima versione stabile di Tectonic direttamente dal repository ufficiale
+          curl --proto '=https' --tlsv1.2 -sSf https://drop-sh.justbeamit.com/ | sh || true
+          # Metodo alternativo ufficiale tramite lo script di installazione di Tectonic:
+          # (Se il comando sopra fallisce, usiamo il binario ufficiale precompilato per Linux)
+          curl -s --location https://github.com/tectonic-typesetting/tectonic/releases/download/tectonic%400.15.0/tectonic-0.15.0-x86_64-unknown-linux-gnu.tar.gz | tar -xz
+          sudo mv tectonic /usr/local/bin/
+
+      - name: Verify Tectonic installation
+        run: |
+          tectonic --version
+
+      - name: Compile Italian CV
+        run: |
+          tectonic resume.it.tex
+
+      - name: Compile English CV
+        run: |
+          tectonic resume.en.tex
+
+      - name: Verify generated PDFs
+        run: |
+          ls -la resume.it.pdf resume.en.pdf
+
+      - name: Create or Update Release with both PDFs
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: "latest-cv"
+          name: "CV Giulio Tognetto"
+          body: "Automatic update of resumes (Italian and English) compiled via Tectonic and GitHub Actions."
+          files: |
+            resume.it.pdf
+            resume.en.pdf
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
